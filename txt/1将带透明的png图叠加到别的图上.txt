@@ -1,0 +1,42 @@
+#include <iostream>
+#include <vector>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//这是我本地带透明区域的png图 emulate3D code
+	//IMREAD_UNCHANGED按解码得到的方式读入图像
+	Mat img_1 = imread("F:/Src/code.png", cv::IMREAD_UNCHANGED);
+	//判断读取结果以及是否带alpha通道-BGRA，opencv颜色顺序是bgr
+	if (img_1.empty()|| img_1.channels()!=4) {
+		std::cout << "could not load image..." << std::endl;
+
+		//waitKey()与waitKey(0)，无限等待
+		//waitKey(n)，等待n毫秒后，关闭显示的窗口
+		waitKey(0);
+		return -1;
+	}
+	//生成一个黑色的图，大小和类型同第一个图
+	Mat img_2 = Mat(img_1.size(), img_1.type(), Scalar(10, 10, 10));
+
+	std::vector<cv::Mat> chs_1;
+	//split函数的功能是通道分离，这样我可以获取alpha通道作为掩码
+	//第一个参数为要进行分离的图像矩阵
+	//第二个参数可以是Mat数组的首地址，或者一个vector<Mat>
+	//此外还有merge合并函数
+	split(img_1, chs_1);
+	//image.copyTo(imageROI)把image复制到imageROI上
+	//image.copyTo(imageROI，mask)把mask和image重叠以后
+	//把mask中像素值为0（black）的点对应的image中的点变为透明，而保留其他点。
+	img_1.copyTo(img_2, chs_1[3]);
+	
+	//窗口名
+	namedWindow("test_opencv", 0);
+	//显示图片
+	//Imshow显示bgr
+	imshow("test_opencv", img_2);
+	waitKey(0);
+	return 0;
+}
