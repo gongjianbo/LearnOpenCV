@@ -21,6 +21,8 @@ int main(int argc, char** argv)
 	//生成一个黑色的图，大小和类型同第一个图
 	Mat img_2 = Mat(img_1.size(), img_1.type(), Scalar(10, 10, 10));
 
+#if 0
+	//第一种方式，使用split获取透明通道作为mask
 	std::vector<cv::Mat> chs_1;
 	//split函数的功能是通道分离，这样我可以获取alpha通道作为掩码
 	//第一个参数为要进行分离的图像矩阵
@@ -31,9 +33,20 @@ int main(int argc, char** argv)
 	//image.copyTo(imageROI，mask)把mask和image重叠以后
 	//把mask中像素值为0（black）的点对应的image中的点变为透明，而保留其他点。
 	img_1.copyTo(img_2, chs_1[3]);
+#else
+	//第二种方式，使用inrange区分透明通道获取mask
+	Mat mask;
+	//参数1原图，低于参数2或者高于参数3为0，范围内的为255
+	inRange(img_1, Scalar(0, 0, 0, 255), Scalar(255, 255, 255, 255), mask);
+	//image.copyTo(imageROI)把image复制到imageROI上
+	//image.copyTo(imageROI，mask)把mask和image重叠以后
+	//把mask中像素值为0（black）的点对应的image中的点变为透明，而保留其他点。
+	img_1.copyTo(img_2, mask);
+#endif
 	
-	//窗口名
-	namedWindow("test_opencv", 0);
+	//新建一个显示窗口
+	//参数2：WINDOW_AUTOSIZE固定image大小，WINDOW_NORMAL为可拖动大小
+	namedWindow("test_opencv", WINDOW_AUTOSIZE);
 	//显示图片
 	//Imshow显示bgr
 	imshow("test_opencv", img_2);
