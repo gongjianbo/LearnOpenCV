@@ -1,0 +1,64 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//【】读取
+	//Mat cv::imread(const String & filename,int flags = IMREAD_COLOR)
+	//参数1：文件路径，支持常规的bmp、png、jpeg等
+	//参数2：cv::ImreadModes枚举
+	//IMREAD_UNCHANGED 按原样返回加载的图像（带有Alpha通道，否则将被裁剪）
+	//IMREAD_GRAYSCALE 始终将图像转换为单通道灰度图像（编解码器内部转换）
+	//IMREAD_COLOR 始终将图像转换为3通道BGR彩色图像
+	//其他枚举参照文档https://docs.opencv.org/master/d4/da8/group__imgcodecs.html
+	//返回Mat图像类型
+	//Mat类型是单通道或多通道数组，它可用于存储矢量和矩阵，灰度或彩色图像等
+	//Mat直接赋值是浅拷贝指向同一个图像内存
+	//rgba的顺序一般是BGRA
+	Mat img = imread("F:/Src/image.png", cv::IMREAD_UNCHANGED);
+	//判断读取结果以及是否带alpha通道-BGRA，opencv颜色顺序是bgr
+	if (img.empty()) {
+		std::cout << "could not load image..." << std::endl;
+
+		//waitKey()与waitKey(0)，无限等待
+		//waitKey(n)，等待n毫秒后，关闭显示的窗口
+		waitKey(0);
+		return -1;
+	}
+	Mat gray;
+	//【】转为灰度图
+	//oid cv::cvtColor(
+	//cv::InputArray src, // 输入序列  
+	//cv::OutputArray dst, // 输出序列  
+	//int code, // 颜色映射码  
+	//int dstCn = 0 // 输出的通道数 (0='automatic')  
+	//);
+	//参数3参照枚举cv::ColorConversionCodes
+	//COLOR_BGRA2GRAY 表示从BGRA转换为灰度
+	//转换保证数据的类型不变，即转换后的图像数据类型和位深与源图像一致
+	cvtColor(img, gray, COLOR_BGRA2GRAY);
+
+	//【】图像写入到文件
+	//bool cv::imwrite(const String & filename,InputArray img,const std::vector<int> & params = std::vector<int>())
+	//参数1：文件名
+	//参数2：图像数据
+	//参数3：特定格式保存的参数编码
+	imwrite("saveimage.png", gray);
+
+	//新建一个显示窗口
+	//参数2：WINDOW_AUTOSIZE固定image大小，WINDOW_NORMAL为可拖动大小
+	namedWindow("test_opencv", WINDOW_AUTOSIZE);
+	//【】显示
+	//void cv::imshow(const String & winname,InputArray mat)
+	//参数1：窗口名称
+	//参数2：要显示的图像
+	//如果图像是8位无符号的，则按原样显示。
+	//如果图像是16位无符号或32位整数，则将像素除以256。即，值范围[0, 255 * 256]映射到[0, 255]。
+	//如果图像是32位或64位浮点，则像素值将乘以255。即，值范围[0, 1]映射为[0, 255]。
+	//此函数后应跟cv::waitKey函数进行等待。否则，它将不会显示图像。
+	imshow("test_opencv", gray);
+	waitKey(0);
+	return 0;
+}
