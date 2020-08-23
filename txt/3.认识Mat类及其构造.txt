@@ -1,0 +1,126 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//【】前言
+	//参照：https://www.w3cschool.cn/opencv/opencv-bedc2caa.html
+	//早期的OpenCV中，图像的处理是通过IplImage的C语言结构
+	//从OpenCV2.0开始用C++重新实现，引入Mat类使用引用计数的方式管理内存
+	//Mat类由两部分组成：矩阵头（包含矩阵的大小，存储类型，存储地址等信息）
+	//以及一个包含像素值的内存块。
+	//矩阵头大小是恒定的，矩阵数据本身的大小可以随着图像的不同而变化。
+	//Mat类使用引用计数系统，每个Mat对象都有自己的头，但是可以指向同一个内存地址，
+	//使矩阵数据可以在两个Mat实例之间共享（参照智能指针）。
+	//使用赋值操作符只会将头和数据指针复制到另一个矩阵，而不是数据本身（浅拷贝）。
+	//如下：三者都指向同一个图像
+	Mat A = imread("F:/Src/image.png", cv::IMREAD_UNCHANGED);
+	Mat B(A);
+	Mat C = A;
+	//要想拷贝数据可以通过clone或copyTo接口（深拷贝）。如下：
+	Mat D = A.clone();
+	Mat E;
+	A.copyTo(E);
+
+
+	//【】创建Mat对象
+	//参照：https://blog.csdn.net/u012058778/article/details/90764430
+	//参照：https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html
+	//1.构造函数
+	//OpenCV提供了多个构造函数，目前我常用的有默认构造和根据行列进行构造
+	/*
+	Mat()
+	Mat(int rows, int cols, int type)
+	Mat(Size size, int type)
+	Mat(int rows, int cols, int type, const Scalar & s)
+	Mat(Size size, int type, const Scalar & s)
+	Mat(int ndims, const int* sizes, int type)
+	Mat(const std::vector< int > & sizes, int type)
+	Mat(int ndims, const int* sizes, int type, const Scalar & s)
+	Mat(const std::vector< int > & sizes, int type, const Scalar & s)
+	Mat(const Mat & m)
+	Mat(int rows, int cols, int type, void* data, size_t step = AUTO_STEP)
+	Mat(Size size, int type, void* data, size_t step = AUTO_STEP)
+	Mat(int ndims, const int* sizes, int type, void* data, const size_t * steps = 0)
+	Mat(const std::vector< int > & sizes, int type, void* data, const size_t * steps = 0)
+	Mat(const Mat & m, const Range & rowRange, const Range & colRange = Range::all())
+	Mat(const Mat & m, const Rect & roi)
+	Mat(const Mat & m, const Range * ranges)
+	Mat(const Mat & m, const std::vector< Range > & ranges)
+	Mat(Mat && m)
+	等
+	*/
+	//下面这个构造创建了一个3*3的四通道纯蓝图像
+	//Scalar顺序一般为BGRA
+	cv::Mat M1(3, 3, CV_8UC4, cv::Scalar(255, 0, 0, 255));
+	std::cout << "M1 = " << std::endl << M1 << std::endl;
+	//M1 =
+	//[255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255;
+	//255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255;
+	//255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255]
+	//imshow("test_opencv", M1); //显示为一个蓝色小点
+
+	//对于小矩阵，可以使用逗号分隔的初始化器或初始化器列表（在后一种情况下需要C++ 11支持）： 
+	Mat MC1 = (Mat_<double>(3, 3) << 0, -1, 0, -1, 5, -1, 0, -1, 0);
+	std::cout << "MC1=" << std::endl << MC1 << std::endl;
+	Mat MC2 = (Mat_ <double>({ 0, -1,0, -1,5, -1,0, -1,0 })).reshape(3);
+	std::cout << "MC2=" << std::endl << MC2 << std::endl;
+	//MC1 =
+	//[0, -1, 0;
+	//-1, 5, -1;
+	//0, -1, 0]
+	//MC2 =
+	//[0, -1, 0;
+	//-1, 5, -1;
+	//0, -1, 0]
+
+	//2.通过create函数构造
+	//void create(int rows, int cols, int type)
+	//void create(Size size, int type)
+	//void create(int ndims, const int* sizes, int type)
+	//void create(const std::vector< int > & sizes, int type)
+	//下面创建了一个3*3的单通道矩阵
+	cv::Mat M2;
+	M2.create(3, 3, CV_8UC(1));
+	//imshow("test_opencv", M2);
+
+	//3.通过类matlab接口的函数创建
+	//eye函数表示的是单位矩阵，ones顾名思义是全是1的矩阵，zeros表示全是0的矩阵
+	cv::Mat Me = cv::Mat::eye(4, 4, CV_64F);
+	std::cout << "Me = " << std::endl << Me << std::endl;
+	cv::Mat Mo = cv::Mat::ones(4, 4, CV_64F);
+	std::cout << "Mo = " << std::endl << Mo << std::endl;
+	cv::Mat Mz = cv::Mat::zeros(4, 4, CV_64F);
+	std::cout << "Mz = " << std::endl << Mz << std::endl;
+	//Me =
+	//[1, 0, 0, 0;
+	//0, 1, 0, 0;
+	//0, 0, 1, 0;
+	//0, 0, 0, 1]
+	//Mo =
+	//[1, 1, 1, 1;
+	//1, 1, 1, 1;
+	//1, 1, 1, 1;
+	//1, 1, 1, 1]
+	//Mz =
+	//[0, 0, 0, 0;
+	//0, 0, 0, 0;
+	//0, 0, 0, 0;
+	//0, 0, 0, 0]
+	//4.使用row或col获取某一行列
+	//Mat col(int x) const
+	//Mat colRange(int startcol, int endcol) const
+	//Mat colRange(const Range & r) const
+	//Mat row(int y) const
+	//Mat rowRange(int startrow, int endrow) const
+	//Mat rowRange(const Range & r) const
+	//5.adjustROI创建一个父矩阵的局部引用矩阵
+	//Mat& cv::Mat::adjustROI(int dtop,int dbottom,int dleft,int dright)
+	//6.clone深拷贝某个mat对象
+	//Mat clone() const CV_NODISCARD
+
+	waitKey(0);
+	return 0;
+}
