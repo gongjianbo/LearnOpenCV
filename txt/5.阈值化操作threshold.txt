@@ -1,0 +1,122 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//【】阈值化操作
+	//阈值化操作在图像处理中是一种常用的算法，比如图像的二值化就是一种最常见的一种阈值化操作。
+	//主要参照：https://blog.csdn.net/guduruyu/article/details/68059450
+	//参照博客：https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html
+	//参照文档：https://www.cnblogs.com/skyfsm/p/6872648.html
+	//【】作为灰度图载入
+	Mat src_image = imread("F:/Src/001.jpg",cv::IMREAD_GRAYSCALE);
+	Mat image;
+	//原图太大了，缩放下
+	resize(src_image, image, cv::Size(int(src_image.cols*0.3),int(src_image.rows*0.3)));
+	//显示图片
+	imshow("source", image);
+
+#if 0
+	//【】直接阈值化
+	//阈值化操作的基本思想是，给定一个输入数组和一个阈值，数组中的每个元素将根据其与阈值之间的大小发生相应的改变。
+	//double cv::threshold(
+	//	InputArray src,  //参数1：src输入数组（多通道，8位或32位浮点）
+	//	OutputArray dst, //参数2：与src同大小和类型、通道数的输出数组
+	//	double thresh,   //参数3：thresh阈值
+	//	double maxval,   //参数4：maxval：THRESH_BINARY和THRESH_BINARY_INV阈值类型使用的最大值
+	//	int type);       //参数5：type阈值类型
+	//返回值：如果使用Otsu或Triangle方法计算的阈值
+	//【】来测试几种阈值类型
+	//threshold_type = CV_THRESH_BINARY:如果 src(x, y) > threshold, dst(x, y) = max_value; 否则, dst（x, y） = 0;
+	//即大于阈值150的为maxvalue255，否则为0（0是黑色）
+	Mat img_0;
+	threshold(image, img_0, 150, 255, CV_THRESH_BINARY);
+	imshow("img_0 CV_THRESH_BINARY", img_0);
+
+	//threshold_type = CV_THRESH_BINARY_INV:如果 src(x, y) > threshold, dst(x, y) = 0; 否则, dst(x, y) = max_value.
+	//即大于阈值150的为0，否则为maxvalue255（0是黑色）
+	Mat img_1;
+	threshold(image, img_1, 150, 255, CV_THRESH_BINARY_INV);
+	imshow("img_1 CV_THRESH_BINARY_INV", img_1);
+
+	//threshold_type = CV_THRESH_TRUNC:如果 src(x, y) > threshold，dst(x, y) = threshold; 否则dst(x, y) = src(x, y).
+	//即大于阈值150的为threshold150，否则为原值（所以测试图像变暗淡了）
+	Mat img_2;
+	threshold(image, img_2, 150, 255, CV_THRESH_TRUNC);
+	imshow("img_2 CV_THRESH_TRUNC", img_2);
+
+	//threshold_type = CV_THRESH_TOZERO:如果src(x, y) > threshold，dst(x, y) = src(x, y); 否则 dst(x, y) = 0
+	//即大于阈值150的为原值，否则为0
+	Mat img_3;
+	threshold(image, img_3, 150, 255, CV_THRESH_TOZERO);
+	imshow("img_3 CV_THRESH_TOZERO", img_3);
+
+	//threshold_type = CV_THRESH_TOZERO_INV:如果 src(x, y) > threshold，dst(x, y) = 0; 否则dst(x, y) = src(x, y).
+	//即大于阈值150的为0，否则为原值
+	Mat img_4;
+	threshold(image, img_4, 150, 255, CV_THRESH_TOZERO_INV);
+	imshow("img_4 CV_THRESH_TOZERO_INV", img_4);
+
+	//不知道干嘛的
+	Mat img_5;
+	threshold(image, img_5, 150, 255, CV_THRESH_MASK);
+	imshow("img_5 THRESH_MASK", img_5);
+
+	//THRESH_OTSU和THRESH_TRIANGLE和前面的type可以组合使用，
+	//好处是不用自己指定thresh值，系统会进行计算并且作为返回值返回。
+	//OTSU（最大类间方差法）。
+	//该算法的主要思想是，在进行阈值化时，考虑所有可能的阈值，
+	//分别计算低于阈值和高于阈值像素的方差
+	//THRESH_OTSU最适用于双波峰
+	//如果图像黑白分明，就可以用这个
+	Mat img_6;
+	threshold(image, img_6, 150, 255, CV_THRESH_OTSU);
+	imshow("img_6 CV_THRESH_OTSU", img_6);
+
+	//THRESH_TRIANGLE最适用于单个波峰，最开始用于医学分割细胞等。
+	//计算图像灰度直方图
+	//寻找直方图中两侧边界
+	//寻找直方图最大值
+	//检测是否最大波峰在亮的一侧，否则翻转
+	//计算阈值得到阈值T, 如果翻转则255 - T
+	Mat img_7;
+	threshold(image, img_7, 150, 255, CV_THRESH_TRIANGLE);
+	imshow("img_7 CV_THRESH_TRIANGLE", img_7);
+
+#else
+	//【】自适应阈值化
+	//自适应阈值化能够根据图像不同区域亮度分布的，改变阈值
+	//void cv::adaptiveThreshold(
+	//	InputArray src,     //参数1：源8位单通道图像
+	//	OutputArray dst,    //参数2：与src具有相同大小和相同类型的目标图像
+	//	double maxValue,    //参数3：分配给满足条件的像素的非零值
+	//	int adaptiveMethod, //参数4：自适应阈值算法，为ADAPTIVE_THRESH_MEAN_C或ADAPTIVE_THRESH_GAUSSIAN_C 
+	//	int thresholdType,  //参数5：阈值类型，为THRESH_BINARY或THRESH_BINARY_INV
+	//	int blockSize,      //参数6：用于计算像素阈值的像素邻域的大小：3、5、7，依此类推
+	//	double C);          //参数7：从平均值或加权平均值中减去常数
+	int blockSize = 25;
+	int constValue = 10;
+	//cv::adaptiveThreshold()支持两种自适应方法，
+	//即cv::ADAPTIVE_THRESH_MEAN_C（平均）和cv::ADAPTIVE_THRESH_GAUSSIAN_C（高斯）。
+	//在两种情况下，自适应阈值T(x, y)。
+	//通过计算每个像素周围bxb大小像素块的加权均值并减去常量C得到。
+	//其中，b由blockSize给出，大小必须为奇数；
+	//如果使用平均的方法，则所有像素周围的权值相同；
+	//如果使用高斯的方法，则（x,y）周围的像素的权值则根据其到中心点的距离通过高斯方程得到。
+
+	//CV_ADAPTIVE_THRESH_MEAN_C 平均
+	Mat img_1;
+	adaptiveThreshold(image, img_1, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY_INV, blockSize, constValue);
+	imshow("adaptive CV_ADAPTIVE_THRESH_MEAN_C", img_1);
+
+	//CV_ADAPTIVE_THRESH_GAUSSIAN_C 高斯
+	Mat img_2;
+	adaptiveThreshold(image, img_2, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, blockSize, constValue);
+	imshow("adaptive CV_ADAPTIVE_THRESH_GAUSSIAN_C", img_2);
+#endif
+
+	waitKey(0); 
+	return 0;
+}

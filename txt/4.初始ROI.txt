@@ -1,0 +1,59 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//【】ROI（region of interest）感兴趣区域，即图像的部分区域
+
+	//【】一个矩形区域
+	//先创建一个白色的400*400Mat
+	Mat image = Mat(400, 400, CV_8UC3, Scalar(255, 255, 255));
+	//取左上角的200*200
+	//Mat重载了()操作符：Mat cv::Mat::operator() (const Rect & roi)  const;
+	//也可以用构造函数：Mat(const Mat &m, const Rect &roi)
+	Mat area = image(Rect(0,0,200, 200));
+	//将截取出来的区域填充为红色
+	//Mat重载了=操作符：Mat & operator=(const Scalar &s)
+	area = Scalar(0, 0, 255);
+	//观察原图像，也被改变了，因为不是clone深拷贝的
+	//imshow("gongjianbo",image);
+	//area每个像素置为（127，127，127）
+	//for (int y = 0; y < area.rows; y++) {
+	//	for (int x = 0; x < area.cols; x++) {
+	//		for (int c = 0; c < 3; c++) {
+	//			area.at<Vec3b>(y, x)[c] =
+	//				saturate_cast<uchar>(127);
+	//		}
+	//	}
+	//}
+	//现在颜色成了灰色
+	//imshow("gongjianbo",image);
+	
+	//【】使用inRange获取mask区域
+	//inRange() 函数可实现二值化，mask根据原图像中符合范围的置为1，否则为0。
+	//这里使用inRange区分之前设置的（0，0，255）颜色，因为是根据颜色，所以可以是不规则的。
+	Mat mask;
+	//参数1原图，低于参数2或者高于参数3为0，范围内的为255
+	inRange(image, Scalar(0, 0, 255), Scalar(0, 0, 255), mask);
+	//mask中，符合的为255，不符合的为0
+	//imshow("gongjianbo", mask);
+	//设置mask区域的颜色为绿色
+	image.setTo(Scalar(0, 255, 0), mask);
+	//现在mask区域成了绿色
+	//imshow("gongjianbo", image);
+
+	//【】位操作
+	//void bitwise_and(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());//dst = src1 & src2
+	//void bitwise_or(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());//dst = src1 | src2
+	//void bitwise_xor(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());//dst = src1 ^ src2
+	//void bitwise_not(InputArray src, OutputArray dst, InputArray mask = noArray());//dst = ~src
+	//对mask区域取反
+	bitwise_not(image, image, mask);
+	//现在mask区域成了紫色（255，0，255）
+	imshow("gongjianbo", image);
+
+	waitKey(0);
+	return 0;
+}
