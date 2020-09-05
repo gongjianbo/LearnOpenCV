@@ -8,8 +8,8 @@ int main(int argc, char** argv)
 	//【】阈值化操作
 	//阈值化操作在图像处理中是一种常用的算法，比如图像的二值化就是一种最常见的一种阈值化操作。
 	//主要参照：https://blog.csdn.net/guduruyu/article/details/68059450
-	//参照博客：https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html
-	//参照文档：https://www.cnblogs.com/skyfsm/p/6872648.html
+	//参照文档：https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html
+	//参照博客：https://www.cnblogs.com/skyfsm/p/6872648.html
 	//【】作为灰度图载入
 	Mat src_image = imread("F:/Src/001.jpg",cv::IMREAD_GRAYSCALE);
 	Mat image;

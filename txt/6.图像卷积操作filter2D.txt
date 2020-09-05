@@ -1,0 +1,71 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+	//【】数字图像处理中卷积
+	//参考：https://blog.csdn.net/chaipp0607/article/details/72236892
+	//数字图像是一个二维的离散信号，对数字图像做卷积操作其实就是利用卷积核（卷积模板）在图像上滑动，
+	//将图像点上的像素灰度值与对应的卷积核上的数值相乘，
+	//然后将所有相乘后的值相加作为卷积核中间像素对应的图像上像素的灰度值，并最终滑动完所有图像的过程。
+	//卷积核的选择有一些规则：
+	//1）卷积核的大小一般是奇数，这样的话它是按照中间的像素点中心对称的，所以卷积核一般都是3x3，5x5或者7x7。有中心了，也有了半径的称呼，例如5x5大小的核的半径就是2。
+	//2）卷积核所有的元素之和一般要等于1，这是为了原始图像的能量（亮度）守恒。其实也有卷积核元素相加不为1的情况，下面就会说到。
+	//3）如果滤波器矩阵所有元素之和大于1，那么滤波后的图像就会比原图像更亮，反之，如果小于1，那么得到的图像就会变暗。如果和为0，图像不会变黑，但也会非常暗。
+	//4）对于滤波后的结构，可能会出现负数或者大于255的数值。对这种情况，我们将他们直接截断到0和255之间即可。对于负数，也可以取绝对值。
+	//【】边界补充问题
+	//参考：https://blog.csdn.net/chaipp0607/article/details/72236892
+	//原始图片尺寸为7 * 7，卷积核的大小为3 * 3，当卷积核沿着图片滑动后只能滑动出一个5 * 5的图片出来，这就造成了卷积后的图片和卷积前的图片尺寸不一致，
+	//这显然不是我们想要的结果，所以为了避免这种情况，需要先对原始图片做边界填充处理。
+	//常用的区域填充方法包括：补零填充、边界复制填充、镜像填充、块填充
+	//【】调用filter2D
+	//参考文档：https://docs.opencv.org/3.4.11/d4/d86/group__imgproc__filter.html
+	//参考：https://www.jianshu.com/p/5a3acca874ac
+	//参考：https://blog.csdn.net/chaipp0607/article/details/72236892
+	//filter2D将图像与卷积核做卷积。
+	//void cv::filter2D(
+	//  InputArray src,    //源图像Mat对象
+	//  OutputArray dst,   //目标图像Mat对象
+	//  int ddepth,        //目标图像的深度，一般填-1即可，表示源图像与目标图像深度相同。
+	//  InputArray kernel, //卷积核,一个单通道浮点型矩阵。如果想在图像不同的通道使用不同的kernel，可以先使用split()函数将图像通道事先分开。
+	//  Point anchor = Point(-1, -1),     //内核的基准点，其默认值为(-1,-1)说明位于kernel的中心位置。基准点即kernel中与进行处理的像素点重合的点
+	//  double delta = 0,  //在储存目标图像前可选的添加到像素的值，默认值为0，不填就是默认值。
+	//  int borderType = BORDER_DEFAULT   //边界填充的类型，默认值是BORDER_DEFAULT，文档说明为gfedcb|abcdefgh|gfedcba镜像填充的。
+	//)
+
+	//一个3*3的Mat图像
+	Mat src_mat = (Mat_<uchar>(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
+	Mat out_mat;
+	//一个3*3的Mat卷积核
+	Mat kernal_mat = (Mat_<char>(3, 3) << 0, -1, 0, -1, 5, -1, 0, -1, 0);
+	filter2D(src_mat, out_mat, -1, kernal_mat);
+	std::cout << "src:\n" << src_mat << std::endl;
+	std::cout << "kernal:\n" << kernal_mat << std::endl;
+	std::cout << "out:\n" << out_mat << std::endl;
+
+	//测试下图片的效果
+	Mat src_image = imread("F:/Src/libingbing.jpg");
+	Mat temp_image;
+	//原图太大了，缩放下
+	resize(src_image, temp_image, cv::Size(int(src_image.cols * 0.3), int(src_image.rows * 0.3)));
+	Mat out_iamge1;
+	//边缘锐化卷积核
+	Mat kernal_mat1 = (Mat_<char>(3, 3) << 0, -1, 0, -1, 5, -1, 0, -1, 0);
+	filter2D(temp_image, out_iamge1, -1, kernal_mat1);
+
+	Mat out_iamge2;
+	//高斯平滑卷积核
+	Mat kernal_mat2 = (Mat_<float>(3, 3) <<
+		1 / 16.0f, 2 / 16.0f, 1 / 16.0f,
+		2 / 16.0f, 4 / 16.0f, 2 / 16.0f,
+		1 / 16.0f, 2 / 16.0f, 1 / 16.0f);
+	filter2D(temp_image, out_iamge2, -1, kernal_mat2);
+	imshow("原图", temp_image);
+	imshow("filter2D边缘锐化", out_iamge1);
+	imshow("filter2D高斯平滑", out_iamge2);
+
+	waitKey(0);
+	return 0;
+}
