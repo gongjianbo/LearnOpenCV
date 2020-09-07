@@ -1,0 +1,46 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace cv;
+
+int main()
+{
+	//【】图像混合
+	//将两张大小和通道相同的图片按照一定比例混合到一起，所有的比例之和为1
+	//void cv::addWeighted(
+	//  InputArray src1, //图片1
+	//  double alpha,    //混合比例
+	//  InputArray src2, //图片2，其大小和通道与1相同
+	//  double beta,     //混合比例
+	//  double gamma,    //偏差，每次计算加上该值
+	//  OutputArray dst, //输出图片，其大小和通道与输入相同
+	//  int dtype = -1   //输出数组的可选深度；当两个输入数组的深度相同时，可以将dtype设置为-1，这等效于src1.depth()。
+	//)
+	//混合公式，其中I为多维数组的索引:
+	//dst(I)=saturate(src1(I)∗alpha+src2(I)∗beta+gamma); （alpha+beta=1）
+	//在多通道阵列的情况下，每个通道都是独立处理的。该函数可以替换为矩阵表达式:
+	//dst = src1 * alpha + src2 * beta + gamma; （alpha+beta=1）
+	Mat raw_1 = imread("F:/Src/add_1.png"); //小狗
+	Mat raw_2 = imread("F:/Src/add_2.png"); //数字背景
+	Mat dst_1;
+	const double alpha = 0.6;
+	//开始混合，注意两个图大小类型一致
+	addWeighted(raw_1, alpha, raw_2, 1-alpha, 0.0, dst_1);
+	imshow("addWeighted", dst_1);
+
+	//图像叠加
+	//void cv::Mat::copyTo(
+	//  OutputArray m,   //叠加到哪个图上
+	//  InputArray mask  //掩膜CV_8U类型（有个重载不需要掩膜，完全复制）
+	//)const
+	Mat mask;
+	//掩膜，把颜色暗淡的剔除
+	inRange(raw_1, Scalar(30, 30, 30), Scalar(255, 255, 255), mask);
+	//拷贝一份数字背景
+	Mat dst_2 = raw_2.clone();
+	raw_1.copyTo(dst_2, mask);
+	imshow("copyTo", dst_2);
+	
+	waitKey(0);
+	return 0;
+}
