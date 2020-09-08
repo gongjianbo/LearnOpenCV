@@ -1,0 +1,126 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace cv;
+
+int main()
+{
+	//参考文档：https://docs.opencv.org/3.4.11/d6/d6e/group__imgproc__draw.html
+	//参考教程：https://www.w3cschool.cn/opencv/opencv-fpo82ccc.html
+	//创建一个全0的黑色图作为画布
+	Mat canvas= Mat::ones(Size(600, 600), CV_8UC3);
+
+	//绘制圆形
+	//void cv::circle(
+	//	InputOutputArray img, //图像
+	//	Point center,         //原心位置
+	//	int radius,           //半径大小
+	//	const Scalar & color, //颜色
+	//	int thickness = 1,    //画笔粗细，负值则为实心填充
+	//	int lineType = LINE_8,//线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0         //中心坐标和半径值中的小数位数
+	//)
+	circle(canvas, Point(100, 100), 50,Scalar(255,255,255) , -1);
+	circle(canvas, Point(100, 100), 60, Scalar(255, 255, 255), 2);
+
+	//绘制直线
+	//void cv::line(
+	//	InputOutputArray img,  //图像
+	//	Point pt1,             //起点
+	//	Point pt2,             //终点
+	//	const Scalar & color,  //颜色
+	//	int thickness = 1,     //线宽，粗细
+	//	int lineType = LINE_8, //线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0          //点坐标中的小数位数
+	//)
+	line(canvas, Point(100, 100), Point(500, 100), Scalar(255, 255, 0), 2);
+
+	//画椭圆
+	//void cv::ellipse(
+	//	InputOutputArray img,    //图像
+	//	const RotatedRect & box, //外接矩形
+	//	const Scalar & color,    //颜色
+	//	int thickness = 1,       //画笔粗细，负值则为实心填充
+	//	int lineType = LINE_8    //线类型枚举LineTypes，LINE_AA抗锯齿
+	//)
+	//void cv::ellipse(
+	//	InputOutputArray img, //图像
+	//	Point center,         //圆心
+	//	Size axes,            //主轴尺寸的一半
+	//	double angle,         //旋转角度，单位为角度
+	//	double startAngle,    //其实角
+	//	double endAngle,      //终止角
+	//	const Scalar & color, //颜色
+	//	int thickness = 1,    //画笔粗细，负值则为实心填充
+	//	int lineType = LINE_8,//线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0         //中心坐标和轴值的小数位数
+	//)
+	ellipse(canvas, Point(100, 300), Size(100, 50),0,0,360,Scalar(0, 0, 255), -1);
+	ellipse(canvas, Point(100, 300), Size(80, 40), 0, 0, 120, Scalar(0, 255, 0), -1);
+	ellipse(canvas, Point(100, 300), Size(50, 100), 0, 0, 360, Scalar(255, 0, 0), 2);
+
+	//画矩形
+	//void cv::rectangle(
+	//	InputOutputArray img, //图像
+	//	Point pt1,            //矩形顶点1
+	//	Point pt2,            //顶点1对角线上的顶点2
+	//	const Scalar & color, //颜色
+	//	int thickness = 1,    //画笔粗细，负值则为实心填充
+	//	int lineType = LINE_8,//线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0         //点坐标中的小数位数
+	//)
+	//void cv::rectangle(
+	//	Mat & img,             //图像
+	//	Rect rec,              //矩形（左上角顶点+size）
+	//	const Scalar & color,  //颜色
+	//	int thickness = 1,     //画笔粗细，负值则为实心填充
+	//	int lineType = LINE_8, //线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0          //点坐标中的小数位数
+	//)
+	rectangle(canvas, Point(50,475),Point(150,525),Scalar(0,0,255),-1);
+	//rectangle(canvas, Point(75, 450), Point(125, 550), Scalar(0, 255, 0), 2);
+	rectangle(canvas, Rect(75,450,50,100), Scalar(0, 255, 0), 2);
+
+	//画多边形
+	//void cv::fillPoly(
+	//	Mat & img,             //图像
+	//	const Point * *pts,    //多边形顶点数组
+	//	const int* npts,      //每个数组中顶点个数
+	//	int ncontours,         //多少个顶点数组
+	//	const Scalar & color,  //颜色
+	//	int lineType = LINE_8, //线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0,         //顶点坐标中的小数位数
+	//	Point offset = Point() //轮廓所有点的可选偏移量
+	//)
+	//void cv::fillPoly(
+	//	InputOutputArray img,   //图像
+	//	InputArrayOfArrays pts, //多边形点数组
+	//	const Scalar & color,   //颜色
+	//	int lineType = LINE_8,  //线类型枚举LineTypes，LINE_AA抗锯齿
+	//	int shift = 0,          //顶点坐标中的小数位数
+	//	Point offset = Point()  //轮廓所有点的可选偏移量
+	//)
+	Point pts_1[3] = {Point(300,300),Point(300,350),Point(350,350)};
+	Point pts_2[4] = { Point(300,400),Point(300,450),Point(400,500),Point(500,420) };
+	const Point* pts_list[] = { pts_1,pts_2 };
+	const int pts_size[] = { 3,4 };
+	fillPoly(canvas, pts_list, pts_size, 2, Scalar(0, 255, 255));
+
+	//画文字（英文）
+	//void cv::putText(
+	//	InputOutputArray img,  //图像
+	//	const String& text,   //字符串
+	//	Point org,             //文本左下角坐标
+	//	int fontFace,          //字体类型枚举HersheyFonts
+	//	double fontScale,      //字体比例因子乘以特定于字体的基本大小
+	//	Scalar color,          //颜色
+	//	int thickness = 1,     //粗细
+	//	int lineType = LINE_8, //线类型枚举LineTypes，LINE_AA抗锯齿
+	//	bool bottomLeftOrigin = false  //如果为true，则图像数据原点位于左下角。否则，它位于左上角
+	//)
+	putText(canvas, "OpenCV", Point(250, 80), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 0), 2);
+
+	imshow("canvas", canvas);
+	waitKey(0);
+	return 0;
+}
